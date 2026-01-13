@@ -1,5 +1,7 @@
 # FAQ Extraction Pipeline
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 AI-powered pipeline to extract and deduplicate FAQs from chatbot conversations. Clusters topics, generates insights, and produces clean FAQ lists.
 
 <!-- Add your own visualization here:
@@ -226,7 +228,7 @@ uv run python -m src.analysis.executive_report
 
 Outputs: `data/output/executive_report.json`
 
-**Note:** This is a WIP. See [Open issues](#open-issues) below.
+**Note:** This is a WIP. See [Known Limitations](#known-limitations) below.
 
 ### Statistical Analyses
 
@@ -659,9 +661,9 @@ uv run python -m src.analysis.dedup.scripts.filter_faq_summary --input path/to/f
 uv run python -m src.analysis.dedup.scripts.filter_faq_summary --input path/to/faq_summary.json --min-conversations 5
 ```
 
-## Using This Repo in the Future
+## Usage
 
-### Using with Other Chatbot Logs
+### Adapting to Your Domain
 
 The pipeline is **domain-agnostic**. All domain-specific configuration is centralized in `config.yaml`.
 
@@ -694,12 +696,7 @@ The pipeline is **domain-agnostic**. All domain-specific configuration is centra
    uv run streamlit run streamlit_app/app.py
    ```
 
-### Open Issues
+### Known Limitations
 
-1. Report generator is a WIP and an example. It needs to be properly implemented.
-
-2. Optimal configuration for the Decomposition and Deduplication pipeline is still to be found, but it's a useful approach for automatic FAQ generation.
-
-3. Issue extraction can be done differently and decomposition can be done at that level (e.g. extracting 2 questions from a conversation)
-
-4. To generate cluster descriptions and FAQs in another language, the LLMs can just be instructed to do this. There is no need to rewrite the prompts in another language.
+- **Report generator**: Currently a WIP example. Needs proper implementation for production use.
+- **Deduplication thresholds**: Default config works well for most cases, but you may need to tune `similarity_threshold` and `pass2_threshold` in `config.yaml` for your specific domain.
