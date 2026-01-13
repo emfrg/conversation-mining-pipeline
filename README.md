@@ -1,5 +1,7 @@
 # FAQ Extraction Pipeline
 
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue?logo=python&logoColor=white)](https://www.python.org/)
+[![Google Cloud](https://img.shields.io/badge/Google_Cloud-Vertex_AI-4285F4?logo=googlecloud&logoColor=white)](https://cloud.google.com/vertex-ai)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 AI-powered pipeline to extract and deduplicate FAQs from chatbot conversations. Clusters topics, generates insights, and produces clean FAQ lists.
@@ -13,8 +15,8 @@ AI-powered pipeline to extract and deduplicate FAQs from chatbot conversations. 
 ### Prerequisites
 
 - Python 3.11+
-- Docker
 - Google Cloud SDK (for Vertex AI authentication)
+- Docker
 
 ### 1. Install with uv
 
