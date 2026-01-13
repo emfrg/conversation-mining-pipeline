@@ -1,0 +1,170 @@
+# =============================================================================
+# FAQ Analytics Pipeline Configuration
+# =============================================================================
+# Edit this file to customize pipeline behavior.
+# All paths are relative to the project root.
+
+# -----------------------------------------------------------------------------
+# Snippet Configuration (for development/testing)
+# -----------------------------------------------------------------------------
+# Set num_conversations to an integer to run on a subset of conversations.
+# When set:
+#   1. All outputs get suffix: _SNIPPET_{N}_conv (e.g., _SNIPPET_100_conv)
+#   2. Clustering/PCA parameters are scaled proportionally:
+#      ratio = snippet_size / full_dataset_size
+#      - n_clusters = max(3, round(n_clusters * ratio))
+#      - min_cluster_size = max(2, round(min_cluster_size * ratio))
+#      - min_samples = max(1, round(min_samples * ratio))
+#      - max_components = max(10, min(snippet_size-1, round(max_components * ratio)))
+# Set to null for full dataset (no suffix, no scaling).
+snippet:
+  num_conversations: null # set to integer for SNIPPET of this size
+  seed: 42 # Random seed for reproducible sampling
+
+# -----------------------------------------------------------------------------
+# Data Paths
+# -----------------------------------------------------------------------------
+paths:
+  raw_data: "dataset/chat_history.json" # modify this to point to the chat_history.json
+  clean_conversations: "data/output/clean_conversations.json"
+  transcripts_dir: "data/output/transcripts"
+  issue_reports: "data/output/issue_reports.json"
+  models_dir: "data/models"
+  visualization_output: "data/output/faq_clusters.png"
+
+# -----------------------------------------------------------------------------
+# Data Filtering Settings
+# -----------------------------------------------------------------------------
+filtering:
+  min_confidence: "high" # Filter issues by clarity. Options: "high", "medium", or null (all)
+
+# -----------------------------------------------------------------------------
+# Qdrant Vector Database
+# -----------------------------------------------------------------------------
+qdrant:
+  host: "localhost"
+  port: 6333
+  embeddings_collection: "faq_issues"
+  reduced_collection: "faq_issues_reduced"
+
+# -----------------------------------------------------------------------------
+# Embedding Model (Vertex AI)
+# -----------------------------------------------------------------------------
+# Options:
+#   - gemini-embedding-001: $0.15/1M tokens, 3072 dims, best quality, 100+ languages
+#   - text-embedding-005:   $0.10/1M tokens, 768 dims, good quality, English-focused
+embedding:
+  model: "gemini-embedding-001" # Use text-embedding-005 for cheaper testing
+  dimensions: 3072 # gemini: 3072, text-embedding-005: 768
+
+# -----------------------------------------------------------------------------
+# PCA Dimensionality Reduction
+# -----------------------------------------------------------------------------
+# Note: max_components is scaled proportionally in snippet mode (min: 10)
+pca:
+  variance_threshold: 0.90 # Keep X% of variance
+  max_components: 200 # Upper limit on components (for full dataset)
+
+# -----------------------------------------------------------------------------
+# Clustering
+# -----------------------------------------------------------------------------
+# Note: These values are for the full dataset. In snippet mode, they are
+# scaled proportionally (see snippet section above for scaling formula).
+clustering:
+  method: "kmeans" # Options: "kmeans" or "hdbscan"
+
+  kmeans:
+    n_clusters: 8 # Number of clusters (used when auto_tune.enabled is false)
+    random_state: 42 # For reproducibility
+
+    # Evaluation settings - compute and display elbow/silhouette analysis
+    evaluation:
+      enabled: true # Compute and display k-selection analysis
+      k_range: [3, 30] # Range of k values to evaluate [min, max]
+      k_step: 1 # Step size (1 = test every k in range)
+      save_plot: true # Export visualization to PNG
+      plot_output: "data/output/kmeans_k_analysis.png"
+
+    # Auto-tune settings - automatically select optimal k
+    auto_tune:
+      enabled: true # Set true to auto-select k instead of using n_clusters
+      selection_method: "combined" # Options: "elbow", "silhouette", "combined"
+      silhouette_weight: 0.3 # Weight for "combined" method (0=elbow, 1=silhouette)
+
+  hdbscan:
+    min_cluster_size: 30 # Minimum points to form cluster (used when auto_tune.enabled is false)
+    min_samples: 10 # Core point threshold (scaled, min: 1)
+
+    # Evaluation settings - compute and display DBCV/silhouette analysis
+    evaluation:
+      enabled: true # Compute and display parameter analysis
+      min_cluster_size_range: [5, 100] # Range to evaluate [min, max]
+      step: 5 # Step size for min_cluster_size
+      save_plot: true # Export visualization to PNG
+      plot_output: "data/output/hdbscan_analysis.png"
+
+    # Auto-tune settings - automatically select optimal min_cluster_size
+    auto_tune:
+      enabled: true # Set true to auto-select min_cluster_size
+      selection_method: "combined" # Options: "dbcv", "silhouette", "combined"
+      silhouette_weight: 0.5 # Weight for "combined" method (0=dbcv, 1=silhouette)
+
+# -----------------------------------------------------------------------------
+# Visualization
+# -----------------------------------------------------------------------------
+visualization:
+  # Enable/disable individual chart types
+  # Charts marked with (*) require extra agent fields (use_extra_agent: true)
+  charts:
+    bar_chart: true # Cluster counts bar chart
+    scatter_plot: true # 2D UMAP scatter plot
+    resolution_status: true # Resolution status by cluster (*)
+    sentiment_analysis: true # Sentiment analysis by cluster (*)
+    tag_wordcloud: true # Tag word cloud (*)
+    tool_use: true # Tool usage by cluster
+
+# -----------------------------------------------------------------------------
+# LLM Settings (Anthropic Claude via Vertex AI)
+# -----------------------------------------------------------------------------
+llm:
+  model_name: "claude-sonnet-4-5@20250929"
+  max_retries: 5 # Retries for API/rate limit errors
+  max_concurrency: 15 # Max parallel API calls
+  use_enrichment_agent: true # Extract sentiment, resolution, steps (runs in parallel - fast)
+  use_tagger_agent: false # Extract tags with pooling (runs sequentially - slower but consistent)
+
+# -----------------------------------------------------------------------------
+# Deduplication Analysis Settings
+# -----------------------------------------------------------------------------
+# Used by src/pipeline/deduplicate_faqs.py (Step 11) and src/analysis/deduplicate_questions.py
+# Uses a lighter embedding model than the main pipeline for efficiency.
+deduplication:
+  embedding_model: "text-embedding-005" # Lighter model (768 dims)
+  dimensions: 768
+  similarity_threshold: 0.96 # Pass 1: on raw atomic questions
+  second_pass_threshold: 0.92 # Pass 2: on synthesized FAQs
+  second_pass: true # Enable second pass on synthesized FAQs (default: true)
+  output_base_dir: "src/analysis/outputs" # Directory for timestamped runs (standalone script only)
+
+# -----------------------------------------------------------------------------
+# Question Decomposition Settings
+# -----------------------------------------------------------------------------
+# Used by src/analysis/decompose_questions.py
+# Breaks compound questions into atomic sub-questions before deduplication.
+decomposition:
+  enabled: true # Set false to skip decomposition step
+  with_presuppositions: true # Extract context-relevant assumptions as questions (default ON)
+
+# -----------------------------------------------------------------------------
+# Domain Configuration
+# -----------------------------------------------------------------------------
+# Edit this section when applying the pipeline to a different chatbot/domain.
+domain:
+  project_name: "FAQ Extraction Demo" # Used in chart titles and intro page in streamlit app
+
+  general_context: |
+    Example FAQ Chatbot.
+
+    These conversations are from an FAQ chatbot deployment.
+    Edit this section to describe your specific chatbot domain,
+    target users, language, and any relevant context for the LLM agents.
