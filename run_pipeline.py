@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-FAQ Analytics Pipeline Orchestrator
+FAQ Extraction Pipeline Orchestrator
 
 Runs the complete pipeline to analyze FAQ conversations:
 1. clean_data            - Parse raw chat data into clean conversations
@@ -164,7 +164,7 @@ def run_pipeline(steps: list[str], dry_run: bool = False) -> None:
     )
 
     print("\n" + "=" * 60)
-    print("FAQ ANALYTICS PIPELINE")
+    print("FAQ EXTRACTION PIPELINE")
     print("=" * 60)
 
     # Validate steps
@@ -294,7 +294,7 @@ def run_pipeline(steps: list[str], dry_run: bool = False) -> None:
 def parse_args() -> argparse.Namespace:
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(
-        description="FAQ Analytics Pipeline",
+        description="FAQ Extraction Pipeline",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:

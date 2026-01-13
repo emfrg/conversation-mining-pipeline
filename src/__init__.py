@@ -1,1 +1,1 @@
-"""FAQ Analytics Pipeline - Source Package."""
+"""FAQ Extraction Pipeline - Source Package."""
