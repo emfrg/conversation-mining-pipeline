@@ -1,4 +1,4 @@
-"""Configuration Loader for FAQ Analytics Pipeline.
+"""Configuration Loader for FAQ Extraction Pipeline.
 
 Loads settings from config.yaml and provides a simple dict interface.
 Automatically applies snippet suffix to output paths when num_conversations is set.
