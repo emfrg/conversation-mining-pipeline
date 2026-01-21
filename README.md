@@ -8,6 +8,8 @@ AI-powered pipeline to extract and deduplicate FAQs from any chatbot conversatio
 
 ![Dashboard Preview](assets/dashboard_preview.png)
 
+---
+
 ## Quick Start
 
 ### Prerequisites
@@ -92,6 +94,8 @@ uv run streamlit run streamlit_app/app.py
 docker compose down
 ```
 
+---
+
 ## Adapt to Your Domain
 
 The pipeline is **domain-agnostic** — it works with any chatbot conversation data. All domain-specific configuration is centralized in `config.yaml`.
@@ -125,6 +129,8 @@ The pipeline is **domain-agnostic** — it works with any chatbot conversation d
 ## Case Study
 
 -->
+
+---
 
 ## Technical Reference
 
@@ -507,6 +513,8 @@ clustering:
 - PNG visualization (`data/output/kmeans_k_analysis.png` or `hdbscan_analysis.png`)
 - Analysis results saved in `metadata.json`
 
+---
+
 ## Streamlit Dashboard
 
 <!-- ![Example Streamlit Visualization](assets/example_streamlit_vis.png) -->
@@ -538,6 +546,8 @@ uv run python -m run_pipeline --steps compute_cluster_stats --recreate
 ### HDBSCAN in Streamlit
 
 When viewing HDBSCAN results in the dashboard, a "Show noise cluster" checkbox appears. This toggle controls visibility of the noise cluster across all views (Simple View, Resolution Status, Sentiment Analysis, Tool Use).
+
+---
 
 ## FAQ Deduplication
 
@@ -694,6 +704,8 @@ uv run python -m src.analysis.dedup.scripts.filter_faq_summary --input path/to/f
 # Filter to questions with 5+ conversations
 uv run python -m src.analysis.dedup.scripts.filter_faq_summary --input path/to/faq_summary.json --min-conversations 5
 ```
+
+---
 
 ## Known Limitations
 
