@@ -4,11 +4,9 @@
 [![Google Cloud](https://img.shields.io/badge/Google_Cloud-Vertex_AI-4285F4?logo=googlecloud&logoColor=white)](https://cloud.google.com/vertex-ai)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-AI-powered pipeline to extract and deduplicate FAQs from chatbot conversations. Clusters topics, generates insights, and produces clean FAQ lists.
+AI-powered pipeline to extract and deduplicate FAQs from any chatbot conversation data. Clusters topics, generates insights, and produces clean FAQ lists.
 
-<!-- Add your own visualization here:
-![Scatter Plot Visualization](assets/faq_clusters_scatter_kmeans.png)
--->
+![Dashboard Preview](assets/dashboard_preview.png)
 
 ## Quick Start
 
@@ -94,7 +92,41 @@ uv run streamlit run streamlit_app/app.py
 docker compose down
 ```
 
-## Data Analysis Pipeline
+## Adapt to Your Domain
+
+The pipeline is **domain-agnostic** — it works with any chatbot conversation data. All domain-specific configuration is centralized in `config.yaml`.
+
+### Three Steps to Analyze Your Chatbot
+
+1. **Add your chat history**
+
+   Place your `chat_history.json` in `dataset/`
+
+   **Note:** If your chat history has a different structure, modify `clean_data.py` or implement a small adapter script.
+
+2. **Configure your domain** in `config.yaml`:
+
+   ```yaml
+   domain:
+     project_name: "Your Project Name" # Used in chart titles and Streamlit app
+     general_context: |
+       Description of your chatbot domain — what it does, target users,
+       language, and any relevant context for the LLM agents.
+   ```
+
+3. **Run the pipeline and explore results**
+
+   ```bash
+   uv run python -m run_pipeline
+   uv run streamlit run streamlit_app/app.py
+   ```
+
+<!--
+## Case Study
+
+-->
+
+## Technical Reference
 
 ### Pipeline Steps
 
@@ -118,7 +150,7 @@ docker compose down
 
 > **Note:** The `statistical_analysis` step is automatically skipped in snippet mode.
 
-### Usage
+### CLI Usage
 
 ```bash
 # Run full pipeline
@@ -350,7 +382,7 @@ You can enable snippet mode either via config or CLI:
 - **Config**: Set `snippet.num_conversations: 100`
 - **CLI**: Use `--snippet 100` (overrides config)
 
-### Output
+### Output Structure
 
 After running the pipeline:
 
@@ -663,42 +695,7 @@ uv run python -m src.analysis.dedup.scripts.filter_faq_summary --input path/to/f
 uv run python -m src.analysis.dedup.scripts.filter_faq_summary --input path/to/faq_summary.json --min-conversations 5
 ```
 
-## Usage
-
-### Adapting to Your Domain
-
-The pipeline is **domain-agnostic**. All domain-specific configuration is centralized in `config.yaml`.
-
-#### Quick Start for New Domain
-
-1. **Add your chat history**
-
-   Place your `chat_history.json` in `dataset/`
-
-   **Note:** If your chat history has a different structure, either modify `clean_data.py` or implement a small adapter script.
-
-2. **Edit domain configuration** in `config.yaml`:
-
-   ```yaml
-   domain:
-     project_name: "Your Project Name" # Used in chart titles and Streamlit app
-     general_context: Description of your chatbot domain.
-     # what the chatbot does, target users, language, and any relevant context for the LLM agents to understand the domain.
-   ```
-
-3. **Run the pipeline**
-
-   ```bash
-   uv run python -m run_pipeline
-   ```
-
-4. **Run the Streamlit app**
-
-   ```bash
-   uv run streamlit run streamlit_app/app.py
-   ```
-
-### Known Limitations
+## Known Limitations
 
 - **Report generator**: Currently a WIP example. Needs proper implementation for production use.
 - **Deduplication thresholds**: Default config works well for most cases, but you may need to tune `similarity_threshold` and `pass2_threshold` in `config.yaml` for your specific domain.
