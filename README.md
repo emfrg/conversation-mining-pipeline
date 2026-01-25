@@ -59,12 +59,16 @@ Edit `config.yaml` to adjust settings (paths, clustering method, etc.).
 
 ### 4. Run Pipeline
 
-**Important**: Before running, there should be a chat_history file in `dataset/chat_history.json`
-
-Run the complete pipeline
+**Important**: Before running, place your chat history file in `dataset/chat_history.json` (see [Input Data Format](#input-data-format) below).
 
 ```bash
 uv run python -m run_pipeline
+```
+
+**Or try with example data** (no config changes needed):
+
+```bash
+uv run python -m run_pipeline --data example_dataset/chat_history.json --project-name "Example Bot" --domain-context "Example e-commerce FAQ chatbot for testing the pipeline." --model gemini
 ```
 
 **Note**: optionally use flag `--skip-deduplication` to skip the last step and significantly cut the time the process takes.
@@ -128,6 +132,41 @@ The pipeline is **domain-agnostic** — it works with any chatbot conversation d
 ## Case Study
 
 -->
+
+---
+
+## Input Data Format
+
+The pipeline expects a JSON file with conversations keyed by UUID:
+
+```json
+{
+  "550e8400-e29b-41d4-a716-446655440000": {
+    "timestamp": "2024-01-15T10:30:00Z",
+    "messages": [
+      {"role": "user", "content": "How do I reset my password?"},
+      {"role": "assistant", "content": "You can reset your password by clicking 'Forgot Password'..."}
+    ]
+  },
+  "550e8400-e29b-41d4-a716-446655440001": {
+    "timestamp": "2024-01-15T11:45:00Z",
+    "messages": [
+      {"role": "user", "content": "What are your shipping options?"},
+      {"role": "assistant", "content": "We offer Standard, Express, and Next-Day shipping..."}
+    ]
+  }
+}
+```
+
+| Field | Description |
+|-------|-------------|
+| Key (UUID) | Unique conversation identifier in UUID v4 format |
+| `timestamp` | ISO 8601 timestamp of conversation start |
+| `messages` | Array of message objects with `role` and `content` |
+| `role` | Either `"user"` or `"assistant"` |
+| `content` | Text content of the message |
+
+**Note:** If your chat history has a different structure, modify `src/pipeline/clean_data.py` or implement an adapter script.
 
 ---
 

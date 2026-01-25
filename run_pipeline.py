@@ -183,8 +183,18 @@ def run_pipeline(steps: list[str], dry_run: bool = False) -> None:
     print(
         f"  Qdrant: {current_config['qdrant']['host']}:{current_config['qdrant']['port']}"
     )
-    print(f"  Clustering: {current_config['clustering']['method']}")
-    print(f"  LLM: {current_config['llm']['model_name']}")
+    clustering_method = current_config["clustering"]["method"]
+    clustering_info = f"  Clustering: {clustering_method}"
+    if clustering_method == "kmeans":
+        if not current_config["clustering"]["kmeans"]["auto_tune"]["enabled"]:
+            clustering_info += (
+                f" (k={current_config['clustering']['kmeans']['n_clusters']})"
+            )
+        else:
+            clustering_info += " (auto-tune)"
+    print(clustering_info)
+    llm_provider = current_config["llm"].get("provider", "anthropic")
+    print(f"  LLM: {llm_provider} / {current_config['llm']['model_name']}")
 
     # Show snippet mode if enabled
     num_conv = current_config.get("snippet", {}).get("num_conversations")
@@ -364,6 +374,41 @@ Examples:
         help="Skip the deduplicate_faqs step (useful for faster iteration)",
     )
 
+    parser.add_argument(
+        "--data",
+        type=str,
+        metavar="PATH",
+        help="Path to chat history JSON file (overrides config)",
+    )
+
+    parser.add_argument(
+        "--project-name",
+        type=str,
+        metavar="NAME",
+        help="Project name for chart titles (overrides config)",
+    )
+
+    parser.add_argument(
+        "--domain-context",
+        type=str,
+        metavar="TEXT",
+        help="Domain context description for LLM agents (overrides config)",
+    )
+
+    parser.add_argument(
+        "--model",
+        type=str,
+        choices=["anthropic", "gemini"],
+        help="LLM provider: anthropic (default) or gemini",
+    )
+
+    parser.add_argument(
+        "--clusters",
+        type=int,
+        metavar="N",
+        help="Force exactly N clusters (disables auto-tuning)",
+    )
+
     return parser.parse_args()
 
 
@@ -377,9 +422,33 @@ def main() -> None:
 
         config_module.config = config_module.get_config_with_snippet(args.snippet)
 
-    # Handle --recreate flag
+    # Handle --data override (must be after --snippet processing)
     import config as config_module
 
+    if args.data:
+        config_module.config["paths"]["raw_data"] = args.data
+
+    # Handle --project-name override
+    if args.project_name:
+        config_module.config["domain"]["project_name"] = args.project_name
+
+    # Handle --domain-context override
+    if args.domain_context:
+        config_module.config["domain"]["general_context"] = args.domain_context
+
+    # Handle --model override
+    if args.model:
+        config_module.config["llm"]["provider"] = args.model
+        # Set sensible default model_name when switching via CLI
+        if args.model == "gemini":
+            config_module.config["llm"]["model_name"] = "gemini-2.5-flash"
+
+    # Handle --clusters override (works for kmeans)
+    if args.clusters:
+        config_module.config["clustering"]["kmeans"]["n_clusters"] = args.clusters
+        config_module.config["clustering"]["kmeans"]["auto_tune"]["enabled"] = False
+
+    # Handle --recreate flag
     config_module.config["recreate"] = args.recreate
 
     if args.list:

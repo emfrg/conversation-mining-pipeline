@@ -15,40 +15,46 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 
+from config import config
+
 # =============================================================================
-# CUSTOMIZE FOR YOUR CHATBOT
-# =============================================================================
-# These tool names are specific to your chatbot implementation.
-# Edit these dictionaries to match your chatbot's tool names.
-# The keys should match the tool names in your chat_history.json data.
+# Tool configuration is loaded from config.yaml (tools section)
 # =============================================================================
 
-# Tool colors (key = tool name from your data, value = hex color)
-TOOL_COLORS = {
-    "no_tool": "#cccccc",  # Gray - keep this for conversations with no tool use
-    "rag_tool": "#3498db",  # Blue
-    "zone_checker": "#2ecc71",  # Green
-    "unanswered_question_tool": "#f39c12",  # Orange
-    "feedback_tool": "#9b59b6",  # Purple
+# Default colors for tools not specified in config
+DEFAULT_COLORS = {
+    "no_tool": "#cccccc",
+    "rag_tool": "#3498db",
+    "unanswered_question_tool": "#f39c12",
+    "feedback_tool": "#9b59b6",
 }
 
-# Tool display labels (key = tool name, value = human-readable label for charts)
-TOOL_LABELS = {
-    "no_tool": "No Tool",
-    "rag_tool": "RAG Tool",
-    "zone_checker": "Zone Checker",
-    "unanswered_question_tool": "Unanswered Question",
-    "feedback_tool": "Feedback Tool",
-}
 
-# Order for stacking in charts (no_tool first as gray base)
-TOOL_ORDER = [
-    "no_tool",
-    "rag_tool",
-    "zone_checker",
-    "unanswered_question_tool",
-    "feedback_tool",
-]
+def get_tool_config() -> tuple[list[str], dict[str, str], dict[str, str]]:
+    """Get tool configuration from config.yaml."""
+    tools_config = config.get("tools", {})
+    tracked = tools_config.get("tracked_tools", [])
+
+    # Build tool order (no_tool first)
+    tool_order = ["no_tool"] + tracked
+
+    # Build colors dict
+    colors = {"no_tool": "#cccccc"}
+    config_colors = tools_config.get("colors", {})
+    for tool in tracked:
+        colors[tool] = config_colors.get(tool, DEFAULT_COLORS.get(tool, "#888888"))
+
+    # Build labels dict
+    labels = {"no_tool": "No Tool"}
+    config_labels = tools_config.get("labels", {})
+    for tool in tracked:
+        # Use config label, or capitalize tool name as fallback
+        labels[tool] = config_labels.get(tool, tool.replace("_", " ").title())
+
+    return tool_order, colors, labels
+
+
+TOOL_ORDER, TOOL_COLORS, TOOL_LABELS = get_tool_config()
 
 
 def create_tool_use_chart(

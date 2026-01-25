@@ -124,10 +124,12 @@ visualization:
     tool_use: true # Tool usage by cluster
 
 # -----------------------------------------------------------------------------
-# LLM Settings (Anthropic Claude via Vertex AI)
+# LLM Settings
 # -----------------------------------------------------------------------------
+# Provider: "anthropic" (Claude via Vertex AI Model Garden) or "gemini"
 llm:
-  model_name: "claude-sonnet-4-5@20250929"
+  provider: "anthropic" # Options: "anthropic" or "gemini"
+  model_name: "claude-sonnet-4-5@20250929" # Model name for the selected provider
   max_retries: 5 # Retries for API/rate limit errors
   max_concurrency: 15 # Max parallel API calls
   use_enrichment_agent: true # Extract sentiment, resolution, steps (runs in parallel - fast)
@@ -154,6 +156,39 @@ deduplication:
 decomposition:
   enabled: true # Set false to skip decomposition step
   with_presuppositions: true # Extract context-relevant assumptions as questions (default ON)
+
+# -----------------------------------------------------------------------------
+# Tool Names Configuration
+# -----------------------------------------------------------------------------
+# Configure the tool names used by your chatbot. These are used for:
+# - Tool usage analytics and visualizations
+# - Correlation analysis (unanswered tool detection)
+# Set to your chatbot's actual tool names, or leave empty [] to disable.
+tools:
+  # Tools to track in visualizations (order determines display order)
+  tracked_tools:
+    - "rag_tool"
+    - "zone_checker"
+    - "unanswered_question_tool"
+    - "feedback_tool"
+
+  # Tool that indicates unanswered/escalated questions (for correlation analysis)
+  # Set to null to disable unanswered tool detection
+  unanswered_tool: "unanswered_question_tool"
+
+  # Display labels for tools (optional - falls back to tool name)
+  labels:
+    rag_tool: "RAG Retrieval"
+    zone_checker: "Zone Checker"
+    unanswered_question_tool: "Unanswered Question"
+    feedback_tool: "Feedback"
+
+  # Colors for tool visualization (optional - uses defaults if not specified)
+  colors:
+    rag_tool: "#3498db"
+    zone_checker: "#2ecc71"
+    unanswered_question_tool: "#f39c12"
+    feedback_tool: "#9b59b6"
 
 # -----------------------------------------------------------------------------
 # Domain Configuration

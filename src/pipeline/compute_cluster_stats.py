@@ -122,17 +122,15 @@ def _get_tools_used(conversation: dict) -> set:
 # =============================================================================
 # CUSTOMIZE FOR YOUR CHATBOT
 # =============================================================================
-# These tool names are specific to your chatbot implementation.
-# Edit this list to match your chatbot's tool names from chat_history.json.
-# Keep "no_tool" for conversations that don't use any tools.
+# Tool names are configured in config.yaml under tools.tracked_tools
 # =============================================================================
-TOOL_ORDER = [
-    "no_tool",
-    "rag_tool",
-    "zone_checker",
-    "unanswered_question_tool",
-    "feedback_tool",
-]
+def get_tool_order() -> list[str]:
+    """Get ordered list of tool names from config."""
+    tracked: list[str] = config.get("tools", {}).get("tracked_tools", [])
+    return ["no_tool"] + tracked
+
+
+TOOL_ORDER = get_tool_order()
 
 
 def compute_tool_use_stats(clusters_data: dict, conversations: dict) -> list[dict]:
