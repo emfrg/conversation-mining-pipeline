@@ -61,15 +61,12 @@ def create_analysis_dataframe(
         sentiment = issue.get("user_sentiment", "")
         is_negative = sentiment == "negative"
 
-        # Check for unanswered_question_tool usage
-        # NOTE: Change "unanswered_question_tool" to match your chatbot's tool name
+        # Check for unanswered tool usage (configured in config.yaml tools.unanswered_tool)
+        unanswered_tool = config.get("tools", {}).get("unanswered_tool")
         used_unanswered = False
-        if conv_id in clean_conversations:
+        if unanswered_tool and conv_id in clean_conversations:
             for turn in clean_conversations[conv_id].get("turns", []):
-                if (
-                    turn.get("type") == "tool"
-                    and turn.get("tool") == "unanswered_question_tool"
-                ):
+                if turn.get("type") == "tool" and turn.get("tool") == unanswered_tool:
                     used_unanswered = True
                     break
 

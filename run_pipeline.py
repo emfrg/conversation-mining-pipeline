@@ -193,13 +193,8 @@ def run_pipeline(steps: list[str], dry_run: bool = False) -> None:
         else:
             clustering_info += " (auto-tune)"
     print(clustering_info)
-    llm_provider = current_config["llm"].get("provider", "claude")
-    if llm_provider == "gemini":
-        from src.utils.llm_factory import GEMINI_MODEL
-
-        print(f"  LLM: {GEMINI_MODEL}")
-    else:
-        print(f"  LLM: {current_config['llm']['model_name']}")
+    llm_provider = current_config["llm"].get("provider", "anthropic")
+    print(f"  LLM: {llm_provider} / {current_config['llm']['model_name']}")
 
     # Show snippet mode if enabled
     num_conv = current_config.get("snippet", {}).get("num_conversations")
@@ -403,8 +398,8 @@ Examples:
     parser.add_argument(
         "--model",
         type=str,
-        choices=["claude", "gemini"],
-        help="LLM provider: claude (default) or gemini",
+        choices=["anthropic", "gemini"],
+        help="LLM provider: anthropic (default) or gemini",
     )
 
     parser.add_argument(
@@ -444,6 +439,9 @@ def main() -> None:
     # Handle --model override
     if args.model:
         config_module.config["llm"]["provider"] = args.model
+        # Set sensible default model_name when switching via CLI
+        if args.model == "gemini":
+            config_module.config["llm"]["model_name"] = "gemini-2.5-flash"
 
     # Handle --clusters override (works for kmeans)
     if args.clusters:
