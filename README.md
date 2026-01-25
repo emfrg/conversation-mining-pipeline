@@ -5,8 +5,7 @@
 
 AI-powered pipeline to extract and deduplicate FAQs from any chatbot conversation data. Clusters topics, generates insights, and produces clean FAQ lists.
 
-![Dashboard Preview](assets/dashboard_preview.png)
-
+![Scatterplot](assets/faq_clusters_scatter_kmeans.png)
 ---
 
 ## Quick Start
@@ -105,7 +104,8 @@ docker compose down
 ## Adapt to Your Domain
 
 
-![Scatterplot](assets/faq_clusters_scatter_kmeans.png)
+![Dashboard Preview](assets/dashboard_preview.png)
+
 
 The pipeline is **domain-agnostic** — it works with any chatbot conversation data. All domain-specific configuration is centralized in `config.yaml`.
 
