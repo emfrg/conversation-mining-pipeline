@@ -11,9 +11,12 @@ Writes:
     Qdrant collection (config.qdrant.embeddings_collection) - Vector embeddings.
 """
 
+import os
+import warnings
+
 from dotenv import load_dotenv
 from langchain_core.documents import Document
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from langchain_google_vertexai import VertexAIEmbeddings
 from langchain_qdrant import QdrantVectorStore
 from qdrant_client import QdrantClient
 from qdrant_client.http.models import Distance, VectorParams
@@ -154,9 +157,15 @@ def run() -> int:
 
     # Initialize Vertex AI embeddings with configurable dimensions
     embedding_dim = get_embedding_dimensions()
-    embeddings = GoogleGenerativeAIEmbeddings(
-        model=embedding_model,
-    )
+    # Suppress deprecation warning - VertexAIEmbeddings works with ADC
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=DeprecationWarning)
+        embeddings = VertexAIEmbeddings(
+            model_name=embedding_model,
+            project=os.getenv("GOOGLE_CLOUD_PROJECT"),
+            location=os.getenv("VERTEX_AI_LOCATION", "europe-west1"),
+            dimensions=embedding_dim,
+        )
     print(f"  Embedding model: {embedding_model} ({embedding_dim} dimensions)")
 
     # Initialize Qdrant client and ensure collection exists with correct dimensions

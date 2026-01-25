@@ -74,7 +74,7 @@ clustering:
   method: "kmeans" # Options: "kmeans" or "hdbscan"
 
   kmeans:
-    n_clusters: 8 # Number of clusters (used when auto_tune.enabled is false)
+    n_clusters: 6 # Number of clusters (used when auto_tune.enabled is false)
     random_state: 42 # For reproducibility
 
     # Evaluation settings - compute and display elbow/silhouette analysis
@@ -128,8 +128,8 @@ visualization:
 # -----------------------------------------------------------------------------
 # Provider: "anthropic" (Claude via Vertex AI Model Garden) or "gemini"
 llm:
-  provider: "anthropic" # Options: "anthropic" or "gemini"
-  model_name: "claude-sonnet-4-5@20250929" # Model name for the selected provider
+  provider: "gemini" # Options: "anthropic" or "gemini"
+  model_name: "gemini-2.5-flash" # gemini: "gemini-2.5-flash", anthropic: "claude-sonnet-4-5@20250929"
   max_retries: 5 # Retries for API/rate limit errors
   max_concurrency: 15 # Max parallel API calls
   use_enrichment_agent: true # Extract sentiment, resolution, steps (runs in parallel - fast)
@@ -195,11 +195,7 @@ tools:
 # -----------------------------------------------------------------------------
 # Edit this section when applying the pipeline to a different chatbot/domain.
 domain:
-  project_name: "FAQ Extraction Demo" # Used in chart titles and intro page in streamlit app
-
+  project_name: "FAQ Extraction from Event Chatbot" # Used in chart titles and Streamlit app
   general_context: |
-    Example FAQ Chatbot.
-
-    These conversations are from an FAQ chatbot deployment.
-    Edit this section to describe your specific chatbot domain,
-    target users, language, and any relevant context for the LLM agents.
+    Description of your chatbot domain — what it does, target users,
+    language, and any relevant context for the LLM agents.

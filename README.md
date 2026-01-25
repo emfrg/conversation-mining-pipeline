@@ -14,8 +14,11 @@ AI-powered pipeline to extract and deduplicate FAQs from any chatbot conversatio
 ### Prerequisites
 
 - Python 3.11+
-- Google Cloud SDK (for Vertex AI authentication)
+- **Google Cloud account with Vertex AI access** (required for embeddings and LLM)
+- Google Cloud SDK (for authentication)
 - Docker
+
+> **Note:** This pipeline uses Google Cloud Vertex AI for embeddings and LLM inference. You'll need a GCP project with Vertex AI API enabled and billing configured. See step 3 for authentication setup.
 
 ### 1. Install with uv
 
@@ -101,6 +104,9 @@ docker compose down
 
 ## Adapt to Your Domain
 
+
+![Scatterplot](assets/faq_clusters_scatter_kmeans.png)
+
 The pipeline is **domain-agnostic** — it works with any chatbot conversation data. All domain-specific configuration is centralized in `config.yaml`.
 
 ### Three Steps to Analyze Your Chatbot
@@ -109,7 +115,7 @@ The pipeline is **domain-agnostic** — it works with any chatbot conversation d
 
    Place your `chat_history.json` in `dataset/`
 
-   **Note:** If your chat history has a different structure, modify `clean_data.py` or implement a small adapter script.
+   **Note:** If your chat history has a different structure, modify `src/pipeline/clean_data.py` or implement a small adapter script.
 
 2. **Configure your domain** in `config.yaml`:
 
@@ -164,7 +170,23 @@ The pipeline expects a JSON file with conversations keyed by UUID:
 | `timestamp` | ISO 8601 timestamp of conversation start |
 | `messages` | Array of message objects with `role` and `content` |
 | `role` | Either `"user"` or `"assistant"` |
-| `content` | Text content of the message |
+| `content` | Text content of the message (see below for tool calls) |
+
+#### Tool Calls (Optional)
+
+If your chatbot uses tools, assistant messages can include tool calls. The `content` field can be an array:
+
+```json
+{
+  "role": "assistant",
+  "content": [
+    {"type": "text", "text": "Let me check that for you."},
+    {"type": "tool_use", "name": "rag_tool", "input": {"query": "shipping policy"}}
+  ]
+}
+```
+
+Configure tracked tools in `config.yaml` under the `tools` section to enable tool usage analytics.
 
 **Note:** If your chat history has a different structure, modify `src/pipeline/clean_data.py` or implement an adapter script.
 
@@ -382,8 +404,8 @@ clustering:
   method: "kmeans" # or "hdbscan"
   kmeans:
     n_clusters: 8 # scaled in snippet mode (used if auto_tune disabled)
-    random_state: 42
-    # auto_tune.enabled: true  # See config.yaml for evaluation/auto_tune settings
+    random_state: null # or integer for reproducibility
+    # auto_tune.enabled: false  # See config.yaml for evaluation/auto_tune settings
   hdbscan:
     min_cluster_size: 30 # scaled in snippet mode
     min_samples: 10 # scaled in snippet mode
@@ -398,7 +420,8 @@ visualization:
     tool_use: true # Tool usage by cluster
 
 llm:
-  model_name: "claude-sonnet-4-5@20250929"
+  provider: "gemini" # Options: "anthropic" or "gemini"
+  model_name: "gemini-2.5-flash" # Model for the selected provider
   max_retries: 5
   max_concurrency: 15
   use_enrichment_agent: true # Add sentiment/resolution/steps (parallel)
@@ -500,7 +523,7 @@ Same pattern applies to:
 
 ### Cluster Parameter Optimization
 
-Both clustering methods support automatic parameter analysis and auto-tuning (default).
+Both clustering methods support automatic parameter analysis and optional auto-tuning.
 
 #### Configuration
 
@@ -509,13 +532,13 @@ clustering:
   method: "kmeans" # or "hdbscan"
 
   kmeans:
-    n_clusters: 12
+    n_clusters: 8
     evaluation:
       enabled: true
       k_range: [3, 30]
       save_plot: true
     auto_tune:
-      enabled: true # Auto-select optimal k
+      enabled: false # Set true to auto-select optimal k
       selection_method: "combined" # "elbow", "silhouette", or "combined"
 
   hdbscan:
@@ -748,4 +771,4 @@ uv run python -m src.analysis.dedup.scripts.filter_faq_summary --input path/to/f
 ## Known Limitations
 
 - **Report generator**: Currently a WIP example. Needs proper implementation for production use.
-- **Deduplication thresholds**: Default config works well for most cases, but you may need to tune `similarity_threshold` and `pass2_threshold` in `config.yaml` for your specific domain.
+- **Deduplication thresholds**: Default config works well for most cases, but you may need to tune `similarity_threshold` and `second_pass_threshold` in `config.yaml` for your specific domain.
