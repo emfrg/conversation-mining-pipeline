@@ -13,7 +13,6 @@ AI-powered pipeline to extract and deduplicate FAQs from any chatbot conversatio
 ### Prerequisites
 
 - Python 3.11+
-- **Google Cloud account with Vertex AI access** (required for embeddings and LLM)
 - Google Cloud SDK (for authentication)
 - Docker
 
