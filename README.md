@@ -1,9 +1,9 @@
-# FAQ Extraction Pipeline
+# Conversation Mining Pipeline
 
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue?logo=python&logoColor=white)](https://www.python.org/)
 [![Google Cloud](https://img.shields.io/badge/Google_Cloud-Vertex_AI-4285F4?logo=googlecloud&logoColor=white)](https://cloud.google.com/vertex-ai)
 
-AI-powered pipeline to extract and deduplicate FAQs from any chatbot conversation data. Clusters topics, generates insights, and produces clean FAQ lists.
+AI-powered pipeline to analyze and extract customer support queries from chatbot conversation data. Clusters topics, generates insights, and produces clean FAQ lists.
 
 ![Scatterplot](assets/faq_clusters_scatter_kmeans.png)
 ---
